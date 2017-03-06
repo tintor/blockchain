@@ -30,54 +30,54 @@ public class TxHandler {
 		return result;
 	}
 
-    /**
-     * @return true if:
-     * (1) all outputs claimed by {@code tx} are in the current UTXO pool,
-     * (2) the signatures on each input of {@code tx} are valid,
-     * (3) no UTXO is claimed multiple times by {@code tx},
-     * (4) all of {@code tx}s output values are positive, and
-     * (5) the sum of {@code tx}s input values is greater than or equal to the sum of its output
-     *     values; and false otherwise.
-     */
-    public boolean isValidTx(Transaction tx) {
-        // (1) all outputs claimed by {@code tx} are in the current UTXO pool,
+	/**
+	 * @return true if:
+	 * (1) all outputs claimed by {@code tx} are in the current UTXO pool,
+	 * (2) the signatures on each input of {@code tx} are valid,
+	 * (3) no UTXO is claimed multiple times by {@code tx},
+	 * (4) all of {@code tx}s output values are positive, and
+	 * (5) the sum of {@code tx}s input values is greater than or equal to the sum of its output
+	 *     values; and false otherwise.
+	 */
+	public boolean isValidTx(Transaction tx) {
+		// (1) all outputs claimed by {@code tx} are in the current UTXO pool,
 		for (Transaction.Input txi : tx.inputs) {
-            if (!pool.containsKey(txi)) {
-                return false;
-            }
-        }
-        // (2) the signatures on each input of {@code tx} are valid,
-        for (Transaction.Input txi : tx.inputs) {
-            if (!Crypto.verifySignature(pool.get(txi).address, tx.getRawDataToSign(txi), txi.signature)) {
-                return false;
-            }
-        }
-        // (3) no UTXO is claimed multiple times by {@code tx},
+			if (!pool.containsKey(txi)) {
+				return false;
+			}
+		}
+		// (2) the signatures on each input of {@code tx} are valid,
+		for (Transaction.Input txi : tx.inputs) {
+			if (!Crypto.verifySignature(pool.get(txi).address, tx.getRawDataToSign(txi), txi.signature)) {
+				return false;
+			}
+		}
+		// (3) no UTXO is claimed multiple times by {@code tx},
 		HashSet<UTXO> claimed = new HashSet<UTXO>();
 		for (Transaction.Input txi : tx.inputs) {
 			if (claimed.contains(txi)) {
 				return false;
 			}
 			claimed.add(txi);
-        }
-        // (4) all of {@code tx}s output values are positive, and
-        for (Transaction.Output txo : tx.outputs) {
-            if (txo.value <= 0) {
-                return false;
-            }
-        }
-        // (5) the sum of {@code tx}s input values is greater than or equal to the sum of its output
-        //     values; and false otherwise.
+		}
+		// (4) all of {@code tx}s output values are positive, and
+		for (Transaction.Output txo : tx.outputs) {
+			if (txo.value <= 0) {
+				return false;
+			}
+		}
+		// (5) the sum of {@code tx}s input values is greater than or equal to the sum of its output
+		//     values; and false otherwise.
 		return txFee(tx) >= 0;
-    }
+	}
 
-    /**
-     * Handles each epoch by receiving an unordered array of proposed transactions, checking each
-     * transaction for correctness, returning a mutually valid array of accepted transactions, and
-     * updating the current UTXO pool as appropriate.
-     */
-    public Transaction[] handleTxs(Transaction[] possibleTxs) {
-        List<Transaction> txs = new ArrayList<Transaction>();
+	/**
+	 * Handles each epoch by receiving an unordered array of proposed transactions, checking each
+	 * transaction for correctness, returning a mutually valid array of accepted transactions, and
+	 * updating the current UTXO pool as appropriate.
+	 */
+	public Transaction[] handleTxs(Transaction[] possibleTxs) {
+		List<Transaction> txs = new ArrayList<Transaction>();
 		for (Transaction tx : possibleTxs) {
 			if (isValidTx(tx)) {
 				txs.add(tx);
@@ -85,16 +85,16 @@ public class TxHandler {
 			}
 		}
 		return txs.toArray(new Transaction[txs.size()]);
-    }
+	}
 
 	protected int txFee(Transaction tx) {
 		int fee = 0;
-        for (Transaction.Input txi : tx.inputs) {
-            fee += pool.get(txi).value;
-        }
-        for (Transaction.Output txo : tx.outputs) {
-            fee -= txo.value;
-        }
+		for (Transaction.Input txi : tx.inputs) {
+			fee += pool.get(txi).value;
+		}
+		for (Transaction.Output txo : tx.outputs) {
+			fee -= txo.value;
+		}
 		return fee;
 	}
 
@@ -116,22 +116,22 @@ public class TxHandler {
 		Set<UTXO> used = new HashSet<UTXO>();
 		for (Transaction.Input txi : ta.inputs) {
 			used.add(txi);
-        }
+		}
 		for (Transaction.Input txi : tb.inputs) {
 			if (used.contains(txi)) {
 				return true;
 			}
-        }
+		}
 		return false;
 	}
 
 	/**
-     * Handles each epoch by receiving an unordered array of proposed transactions, checking each
-     * transaction for correctness, returning a mutually valid array of accepted transactions, and
-     * updating the current UTXO pool as appropriate.
-     */
+	 * Handles each epoch by receiving an unordered array of proposed transactions, checking each
+	 * transaction for correctness, returning a mutually valid array of accepted transactions, and
+	 * updating the current UTXO pool as appropriate.
+	 */
 	public Transaction[] handleTxsMaxFee(Transaction[] possibleTxs) {
-        ArrayList<Transaction> txs = new ArrayList<Transaction>();
+		ArrayList<Transaction> txs = new ArrayList<Transaction>();
 		Graph<Transaction> graph = new Graph<Transaction>();
 		for (Transaction tx : possibleTxs) {
 			if (isValidTx(tx)) {
@@ -155,5 +155,5 @@ public class TxHandler {
 			applyTx(tx);
 		}
 		return bestTxs.toArray(new Transaction[bestTxs.size()]);
-    }
+	}
 }
